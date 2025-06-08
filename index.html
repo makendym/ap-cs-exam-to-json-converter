@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP CS A PDF to JSON Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: 600;
+        }
+
+        .file-input-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .api-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .extracted-text {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .json-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 600px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #363;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-top: 10px;
+            width: auto;
+            display: inline-block;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AP CS A PDF to JSON Converter</h1>
+            <p>Convert AP Computer Science A exam questions from PDF to structured JSON using AI</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="pdfFile" class="file-input" accept=".pdf">
+                <label for="pdfFile" class="file-input-btn">📄 Choose PDF File</label>
+            </div>
+            <div id="fileName" style="margin-top: 10px; color: #666;"></div>
+        </div>
+
+        <div class="api-section">
+            <h3 style="margin-bottom: 20px; color: #2c3e50;">🤖 AI Configuration</h3>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('openai')">OpenAI</button>
+                <button class="tab" onclick="switchTab('anthropic')">Anthropic</button>
+                <button class="tab" onclick="switchTab('groq')">Groq</button>
+                <button class="tab" onclick="switchTab('custom')">Custom API</button>
+            </div>
+
+            <div id="openai-tab" class="tab-content active">
+                <div class="form-group">
+                    <label for="openaiKey">OpenAI API Key</label>
+                    <input type="password" id="openaiKey" placeholder="sk-...">
+                </div>
+                <div class="form-group">
+                    <label for="openaiModel">Model</label>
+                    <select id="openaiModel">
+                        <option value="gpt-4o">GPT-4o (Recommended)</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="anthropic-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="anthropicKey">Anthropic API Key</label>
+                    <input type="password" id="anthropicKey" placeholder="sk-ant-...">
+                </div>
+                <div class="form-group">
+                    <label for="anthropicModel">Model</label>
+                    <select id="anthropicModel">
+                        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommended)</option>
+                        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="groq-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="groqKey">Groq API Key</label>
+                    <input type="password" id="groqKey" placeholder="gsk_...">
+                </div>
+                <div class="form-group">
+                    <label for="groqModel">Model</label>
+                    <select id="groqModel">
+                        <option value="llama-3.1-70b-versatile">Llama 3.1 70B (Recommended)</option>
+                        <option value="llama-3.1-8b-instant">Llama 3.1 8B</option>
+                        <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="custom-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="customEndpoint">API Endpoint</label>
+                    <input type="url" id="customEndpoint" placeholder="https://api.example.com/v1/chat/completions">
+                </div>
+                <div class="form-group">
+                    <label for="customKey">API Key</label>
+                    <input type="password" id="customKey" placeholder="Your API key">
+                </div>
+                <div class="form-group">
+                    <label for="customModel">Model Name</label>
+                    <input type="text" id="customModel" placeholder="model-name">
+                </div>
+            </div>
+
+            <button class="btn" onclick="convertPDF()">🔄 Convert PDF to JSON</button>
+        </div>
+
+        <div id="resultsSection" class="results-section">
+            <h3 style="margin-bottom: 20px; color: #2c3e50;">📊 Results</h3>
+            
+            <div class="grid">
+                <div>
+                    <h4 style="margin-bottom: 10px;">Extracted Text:</h4>
+                    <div id="extractedText" class="extracted-text"></div>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 10px;">Structured JSON:</h4>
+                    <div id="jsonOutput" class="json-output"></div>
+                    <button class="copy-btn" onclick="copyJSON()">📋 Copy JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingSection" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processing your PDF and converting to JSON...</p>
+        </div>
+    </div>
+
+    <script>
+        let extractedText = '';
+        let currentActiveTab = 'openai';
+
+        // File handling
+        document.getElementById('pdfFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+                extractTextFromPDF(file);
+            }
+        });
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentActiveTab = tabName;
+        }
+
+        async function extractTextFromPDF(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                let fullText = '';
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n\n';
+                }
+
+                extractedText = fullText.trim();
+                document.getElementById('extractedText').textContent = splitIntoQuestions(extractedText);
+                
+                // Show results section
+                document.getElementById('resultsSection').style.display = 'block';
+                
+                showMessage('PDF text extracted successfully!', 'success');
+            } catch (error) {
+                console.error('Error extracting PDF:', error);
+                showMessage('Error extracting text from PDF: ' + error.message, 'error');
+            }
+        }
+
+        function splitIntoQuestions(text) {
+            // Find the starting point using a more flexible pattern that accounts for newline
+            const startPattern = /1\.\s*(?:This question|The|A|An|In|For|Users|Many|Consider)/g;
+            const startMatch = text.match(startPattern);
+            
+            console.log('Original Text:', text);
+            
+            if (!startMatch) {
+                throw new Error('Could not find the starting point (1.) in the PDF');
+            }
+
+            // Get text from the starting point
+            const startIndex = startMatch.index;
+            const relevantText = text.slice(startIndex);
+            
+            console.log('Text after start point:', relevantText);
+
+            // Find questions sequentially
+            const questions = [];
+            let currentIndex = 0;
+            
+            // Look for each question in order (1,2,3,4)
+            for (let i = 1; i <= 4; i++) {
+                const questionPattern = new RegExp(`${i}\\.\\s*(?:This question|The|A|An|In|For|Users|Many|Consider)`);
+                const match = relevantText.slice(currentIndex).match(questionPattern);
+                
+                if (!match) {
+                    throw new Error(`Could not find question ${i}`);
+                }
+                
+                const questionStart = currentIndex + match.index;
+                const nextQuestionStart = i < 4 
+                    ? relevantText.indexOf(`${i + 1}.`, questionStart)
+                    : relevantText.length;
+                
+                const questionText = relevantText.slice(questionStart, nextQuestionStart).trim();
+                console.log(`Question ${i}:`, questionText);
+                
+                questions.push(questionText);
+                currentIndex = questionStart;
+            }
+            
+            return questions;
+        }
+
+        function showMessage(message, type) {
+            const existingMessage = document.querySelector('.error, .success');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            document.querySelector('.container').insertBefore(messageDiv, document.querySelector('.upload-section'));
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        async function convertPDF() {
+            if (!extractedText) {
+                showMessage('Please upload and extract a PDF first.', 'error');
+                return;
+            }
+
+            const apiConfig = getAPIConfig();
+            if (!apiConfig) {
+                showMessage('Please configure API settings.', 'error');
+                return;
+            }
+
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('jsonOutput').textContent = ''; // Clear previous results
+
+            try {
+                const questions = splitIntoQuestions(extractedText);
+                let allResults = '';
+
+                for (let i = 0; i < questions.length; i++) {
+                    const question = questions[i];
+                    showMessage(`Processing question ${i + 1} of ${questions.length}...`, 'success');
+                    
+                    const jsonResult = await callAI(question, apiConfig);
+                    const formattedJson = JSON.stringify(jsonResult, null, 2);
+                    
+                    // Add question number and separator between results
+                    if (i > 0) allResults += '\n\n';
+                    allResults += `// Question ${i + 1}\n${formattedJson}`;
+                    
+                    // Update the output as we process each question
+                    document.getElementById('jsonOutput').textContent = allResults;
+                }
+
+                showMessage('All questions processed successfully!', 'success');
+            } catch (error) {
+                console.error('Error converting to JSON:', error);
+                showMessage('Error converting to JSON: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loadingSection').style.display = 'none';
+            }
+        }
+
+        function getAPIConfig() {
+            switch (currentActiveTab) {
+                case 'openai':
+                    const openaiKey = document.getElementById('openaiKey').value;
+                    if (!openaiKey) return null;
+                    return {
+                        type: 'openai',
+                        apiKey: openaiKey,
+                        model: document.getElementById('openaiModel').value,
+                        endpoint: 'https://api.openai.com/v1/chat/completions'
+                    };
+                    
+                case 'anthropic':
+                    const anthropicKey = document.getElementById('anthropicKey').value;
+                    if (!anthropicKey) return null;
+                    return {
+                        type: 'anthropic',
+                        apiKey: anthropicKey,
+                        model: document.getElementById('anthropicModel').value,
+                        endpoint: 'https://api.anthropic.com/v1/messages'
+                    };
+                    
+                case 'groq':
+                    const groqKey = document.getElementById('groqKey').value;
+                    if (!groqKey) return null;
+                    return {
+                        type: 'groq',
+                        apiKey: groqKey,
+                        model: document.getElementById('groqModel').value,
+                        endpoint: 'https://api.groq.com/openai/v1/chat/completions'
+                    };
+                    
+                case 'custom':
+                    const customKey = document.getElementById('customKey').value;
+                    const customEndpoint = document.getElementById('customEndpoint').value;
+                    const customModel = document.getElementById('customModel').value;
+                    if (!customKey || !customEndpoint || !customModel) return null;
+                    return {
+                        type: 'custom',
+                        apiKey: customKey,
+                        model: customModel,
+                        endpoint: customEndpoint
+                    };
+                    
+                default:
+                    return null;
+            }
+        }
+
+        async function callAI(text, config) {
+            const systemPrompt = `You are an expert at converting AP Computer Science A exam questions into structured JSON format. Your task is to take a prose-style AP CS A free-response question and transform it into a standardized JSON structure with the following key components:
+
+{
+  "question": {
+    "id": "",
+    "description": "",
+    "classes": [
+      {
+        "class_name": "",
+        "fields": [
+          {
+            "name": "",
+            "type": "",
+            "visibility": "",
+            "description": ""
+          }
+        ],
+        "methods": [
+          {
+            "name": "",
+            "return_type": "",
+            "parameters": [{"name": "", "type": ""}],
+            "visibility": "",
+            "description": "",
+            "part": "",
+            "precondition": "",
+            "implementation_task": "",
+            "detailed_description": ""
+          },
+          {
+            "name": "",
+            "return_type": "",
+            "parameters": [
+              {"name": "", "type": ""},
+              {"name": "", "type": ""}
+            ],
+            "visibility": "",
+            "description": "",
+            "part": "",
+            "precondition": "",
+            "implementation_task": "",
+            "assumption": ""
+          }
+        ],
+        "notes": [""]
+      }
+    ],
+    "examples": [
+      {
+        "part": "",
+        "examples": [
+          {
+            "description": "",
+            "initial_state": "",
+            "method_call": "",
+            "result": "",
+            "explanation": ""
+          },
+          {
+            "description": "",
+            "initial_state": "",
+            "method_call": "",
+            "result": "",
+            "day_by_day": [],
+            "explanation": ""
+          }
+        ]
+      }
+    ],
+    "topics": ["",""],
+    "difficulty": ""
+  }
+}
+
+Please maintain all the essential information from the original question while organizing it into a clean, structured JSON format that can be used for programmatic processing. Return ONLY the JSON, no additional text.`;
+
+            let requestBody, headers;
+
+            if (config.type === 'anthropic') {
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-api-key': config.apiKey,
+                    'anthropic-version': '2023-06-01'
+                };
+                requestBody = {
+                    model: config.model,
+                    max_tokens: 4000,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: systemPrompt + '\n\nHere\'s the AP CS A question to transform:\n\n' + text
+                        }
+                    ]
+                };
+            } else {
+                // OpenAI-compatible format (OpenAI, Groq, Custom)
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`
+                };
+                requestBody = {
+                    model: config.model,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: systemPrompt
+                        },
+                        {
+                            role: 'user',
+                            content: 'Here\'s the AP CS A question to transform:\n\n' + text
+                        }
+                    ],
+                    max_tokens: 4000,
+                    temperature: 0.1
+                };
+            }
+
+            const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`API Error: ${response.status} - ${errorData}`);
+            }
+
+            const data = await response.json();
+            
+            let content;
+            if (config.type === 'anthropic') {
+                content = data.content[0].text;
+            } else {
+                content = data.choices[0].message.content;
+            }
+
+            // Parse the JSON response
+            try {
+                return JSON.parse(content.trim());
+            } catch (parseError) {
+                // If direct parsing fails, try to extract JSON from the response
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+                throw new Error('Could not parse JSON from AI response');
+            }
+        }
+
+        function copyJSON() {
+            const jsonText = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(jsonText).then(() => {
+                showMessage('JSON copied to clipboard!', 'success');
+            }).catch(err => {
+                showMessage('Failed to copy JSON', 'error');
+            });
+        }
+
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    </script>
+</body>
+</html>
