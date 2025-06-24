@@ -350,6 +350,8 @@
                     <select id="groqModel">
                         <option value="llama-3.1-70b-versatile">Llama 3.1 70B (Recommended)</option>
                         <option value="llama-3.1-8b-instant">Llama 3.1 8B</option>
+                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B</option>
+                        <option value="meta-llama/llama-prompt-guard-2-22m">Llama Prompt Guard 2 22M</option>
                         <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
                     </select>
                 </div>
@@ -457,7 +459,7 @@
 
         function splitIntoQuestions(text) {
             // Find the starting point using a more flexible pattern that accounts for newline
-            const startPattern = /1\.\s*(?:This question|The|A|An|In|For|Users|Many|Consider)/g;
+            const startPattern = /1\.\s*(?:This question|The|A|An|In|For|Users|Many|Consider|Digital)/g;
             const startMatch = text.match(startPattern);
             
             console.log('Original Text:', text);
@@ -478,7 +480,7 @@
             
             // Look for each question in order (1,2,3,4)
             for (let i = 1; i <= 4; i++) {
-                const questionPattern = new RegExp(`${i}\\.\\s*(?:This question|The|A|An|In|For|Users|Many|Consider)`);
+                const questionPattern = new RegExp(`${i}\\.\\s*(?:This question|The|A|An|In|For|Users|Many|Consider|Digital)`);
                 const match = relevantText.slice(currentIndex).match(questionPattern);
                 
                 if (!match) {
@@ -612,77 +614,158 @@
         async function callAI(text, config) {
             const systemPrompt = `You are an expert at converting AP Computer Science A exam questions into structured JSON format. Your task is to take a prose-style AP CS A free-response question and transform it into a standardized JSON structure with the following key components:
 
+**Required JSON Structure:**
+
+
 {
-  "question": {
-    "id": "",
-    "description": "",
-    "classes": [
-      {
-        "class_name": "",
-        "fields": [
+  "exam_info": {
+    "year": "<exam_year>",
+    "subject": "AP Computer Science A",
+    "section": "Free Response Questions",
+    "total_questions": "<number>",
+    "total_points": "<total>",
+    "time_limit_minutes": 90
+  },
+  "questions": [
+    {
+      "id": "<question_number>",
+      "type": "<one_of: methods_and_control_structures | class_design | array_arraylist | 2d_array>",
+      "points": "<total_points_for_question>",
+      "percentage": "<percentage_of_total_exam>",
+      "title": "<descriptive_title>",
+      "description": "<complete_original_question_text_with_all_context_and_details>",
+      "class_info": {
+        "class_name": "<main_class>",
+        "given_fields": [
           {
-            "name": "",
-            "type": "",
-            "visibility": "",
-            "description": ""
+            "name": "<field_name>",
+            "type": "<data_type>",
+            "visibility": "<public|private>",
+            "description": "<field_description>"
           }
         ],
-        "methods": [
+        "given_methods": [
           {
-            "name": "",
-            "return_type": "",
-            "parameters": [{"name": "", "type": ""}],
-            "visibility": "",
-            "description": "",
-            "part": "",
-            "precondition": "",
-            "implementation_task": "",
-            "detailed_description": ""
-          },
-          {
-            "name": "",
-            "return_type": "",
-            "parameters": [
-              {"name": "", "type": ""},
-              {"name": "", "type": ""}
-            ],
-            "visibility": "",
-            "description": "",
-            "part": "",
-            "precondition": "",
-            "implementation_task": "",
-            "assumption": ""
-          }
-        ],
-        "notes": [""]
-      }
-    ],
-    "examples": [
-      {
-        "part": "",
-        "examples": [
-          {
-            "description": "",
-            "initial_state": "",
-            "method_call": "",
-            "result": "",
-            "explanation": ""
-          },
-          {
-            "description": "",
-            "initial_state": "",
-            "method_call": "",
-            "result": "",
-            "day_by_day": [],
-            "explanation": ""
+            "name": "<method_name>",
+            "return_type": "<type>",
+            "parameters": [{"name": "<param>", "type": "<type>"}],
+            "visibility": "<public|private>",
+            "description": "<what_method_does>",
+            "preconditions": "<any_preconditions>"
           }
         ]
-      }
-    ],
-    "topics": ["",""],
-    "difficulty": ""
-  }
+      },
+      "supporting_class": {
+        "class_name": "<helper_class_if_any>",
+        "purpose": "<why_this_class_exists>",
+        "constructor": "<constructor_signature>",
+        "methods": [
+          {
+            "name": "<method_name>",
+            "return_type": "<type>",
+            "description": "<purpose>"
+          }
+        ]
+      },
+      "complete_class_implementation": {
+        "class_name": "<class_to_implement>",
+        "required_components": ["Instance variables", "Constructor", "All methods"]
+      },
+      "parts": [
+        {
+          "part": "<a|b|c>",
+          "points": "<points_for_this_part>",
+          "description": "<complete_original_question_text_with_all_context_and_details>",
+          "method": {
+            "name": "<method_to_implement>",
+            "return_type": "<return_type>",
+            "parameters": [{"name": "<param>", "type": "<type>"}],
+            "visibility": "public",
+            "preconditions": "<preconditions_if_any>",
+            "postcondition": "<postconditions_if_any>",
+            "task": "<what_method_should_do>"
+          },
+          "implementation_requirements": {
+            "<requirement_category>": "<specific_requirement>",
+            "algorithm_type": "<description_of_approach>",
+            "helper_method_usage": "<which_methods_to_use>",
+            "return_logic": "<what_to_return_when>",
+            "special_cases": "<edge_cases_to_handle>"
+          },
+          "algorithm_approach": "<tag_for_solution_strategy>",
+          "test_cases": [
+            {
+              "scenario": "<test_description>",
+              "initial_state": "<starting_conditions>",
+              "method_call": "<example_call>",
+              "expected_result": "<expected_outcome>",
+              "explanation": "<why_this_result>"
+            }
+          ],
+          "examples": [
+            {
+              "description": "<example_scenario>",
+              "data": "<sample_data>",
+              "method_call": "<call_example>",
+              "result": "<expected_result>",
+              "explanation": "<step_by_step_explanation>"
+            }
+          ]
+        }
+      ],
+      "key_concepts": [
+        "<concept1>",
+        "<concept2>",
+        "<concept3>"
+      ]
+    }
+  ]
 }
+
+**Critical Requirements for Complete Information Capture:**
+
+1. **Full Question Description:** Include the COMPLETE original question text in the "description" field - do not summarize or truncate. This should contain all context, background information, and detailed explanations provided in the original question.DO NOT INCLUDE ANY EXAMPLES OR TEST CASES IN THE DESCRIPTION.
+
+2. **Preserve All Examples:** Capture every example, test case, and sample execution exactly as written, including:
+   - All numerical values and calculations
+   - Step-by-step execution traces
+   - Before/after state comparisons
+   - Expected outputs and explanations
+
+3. **Include All Constraints:** Document every precondition, postcondition, assumption, and constraint mentioned in the original question.
+
+4. **Capture Implementation Details:** Include all specific requirements such as:
+   - Exact method signatures and parameter names
+   - Required algorithm approaches or restrictions
+   - Specific Java methods that must be used
+   - Performance or efficiency requirements
+
+5. **Preserve Original Language:** Use the exact terminology and phrasing from the original question, especially for technical terms and specific requirements.
+
+6. **Complete Class Information:** Include all provided class structures, method signatures, field declarations, and any code snippets exactly as given.
+
+
+**Important Guidelines:**
+
+1. **Question Type Classification:**
+   - \`methods_and_control_structures\`: Focus on loops, conditionals, method composition
+   - \`class_design\`: Complete class implementation from scratch
+   - \`array_arraylist\`: ArrayList/array manipulation and analysis
+   - \`2d_array\`: Two-dimensional array navigation and operations
+
+2. **Algorithm Approach Tags:** Use descriptive tags like:
+   - \`sequential_search\`, \`nested_loops\`, \`early_termination\`
+   - \`reverse_iteration\`, \`sliding_window\`, \`state_tracking\`
+   - \`pattern_detection\`, \`custom_traversal\`, \`conditional_modification\`
+
+3. **Implementation Requirements:** Break down into specific categories:
+   - Loop structures, search strategies, helper method usage
+   - Bounds checking, order preservation, termination conditions
+   - Return logic, edge cases, algorithm efficiency
+
+4. **Include ALL provided information:** Examples, preconditions, test cases, sample executions, grading rubrics, class relationships, and any helper classes or methods.
+
+5. **Maintain Educational Context:** Preserve point values, learning objectives, and the pedagogical structure of the original question.
 
 Please maintain all the essential information from the original question while organizing it into a clean, structured JSON format that can be used for programmatic processing. Return ONLY the JSON, no additional text.`;
 
