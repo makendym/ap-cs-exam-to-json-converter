@@ -1,134 +1,62 @@
 # AP CS A PDF to JSON Converter
 
+## Table of Contents
+* [Description](#description)
+* [Getting Started](#getting-started)
+* [Contributing](#contributing)
+* [What I Learned](#what-i-learned)
+* [Questions?](#questions)
+
+
+## Description
 A web-based tool that converts AP Computer Science A Free-Response Questions (FRQs) from PDF format to structured JSON. This tool is particularly useful for educators and students who want to programmatically analyze or work with AP CS A questions.
 
-## Features
+This application simplifies the extraction process, allowing users to focus on the content. It features:
+* **Converts PDF FRQs:** Transforms PDF documents into structured JSON format.
+* **Multi-Model Support:** Supports OpenAI, Anthropic, Groq, and Custom AI models.
+* **Smart Extraction:** Handles multiple PDF formats, maintaining question integrity and formatting.
+* **Real-time Feedback:** Provides immediate processing status and feedback.
+* **Sequential Extraction:** Automatically identifies and extracts questions 1-4.
 
-- Converts PDF FRQs to structured JSON format
-- Supports multiple AI models (OpenAI, Anthropic, Groq, Custom)
-- Handles various PDF formats and question structures
-- Extracts questions sequentially (1-4)
-- Maintains question integrity and formatting
-- Real-time processing feedback
-- Copy JSON output to clipboard
 
-## Usage
+## Getting Started
 
-1. Open `index.html` in a web browser
-2. Upload an AP CS A FRQ PDF
-3. Configure your preferred AI model and API key
-4. Click "Convert PDF to JSON"
-5. View and copy the structured JSON output
+### Prerequisites
+- A modern web browser (Chrome, Firefox, Safari, Edge)
 
-## JSON Structure
+### 1. Open the Tool
+Simply open the `index.html` file in your preferred web browser. No server installation is required for basic usage.
 
-The converter produces JSON in the following format:
+### 2. Upload and Configure
+1. Upload an AP CS A FRQ PDF file.
+2. Configure your preferred AI model and enter your API key.
 
-```json
-{
-  "question": {
-    "id": "",
-    "description": "",
-    "classes": [
-      {
-        "class_name": "",
-        "fields": [
-          {
-            "name": "",
-            "type": "",
-            "visibility": "",
-            "description": ""
-          }
-        ],
-        "methods": [
-          {
-            "name": "",
-            "return_type": "",
-            "parameters": [{"name": "", "type": ""}],
-            "visibility": "",
-            "description": "",
-            "part": "",
-            "precondition": "",
-            "implementation_task": "",
-            "detailed_description": ""
-          }
-        ],
-        "notes": [""]
-      }
-    ],
-    "examples": [
-      {
-        "part": "",
-        "examples": [
-          {
-            "description": "",
-            "initial_state": "",
-            "method_call": "",
-            "result": "",
-            "explanation": ""
-          }
-        ]
-      }
-    ],
-    "topics": ["",""],
-    "difficulty": ""
-  }
-}
-```
+### 3. Convert
+Click "Convert PDF to JSON" to start the process. The tool will parse the PDF and extract the questions.
 
-## Supported AI Models
+### 4. Output
+View the structured JSON output on the screen and copy it to your clipboard for use in your applications.
 
-- OpenAI
-  - GPT-4o (Recommended)
-  - GPT-4o Mini
-  - GPT-4 Turbo
-  - GPT-3.5 Turbo
-
-- Anthropic
-  - Claude 3.5 Sonnet
-  - Claude 3.5 Haiku
-  - Claude 3 Opus
-
-- Groq
-  - Llama 3.1 70B
-  - Llama 3.1 8B
-  - Mixtral 8x7B
-
-- Custom API Support
-
-## Technical Details
-
-- Built with vanilla JavaScript
-- Uses PDF.js for PDF text extraction
-- Supports various PDF formats and structures
-- Handles sequential question extraction
-- Maintains question context and formatting
-
-## Question Extraction
-
-The tool uses pattern matching to identify questions based on:
-- Question numbers (1-4)
-- Common question starters:
-  - "This question"
-  - "The"
-  - "A"
-  - "An"
-  - "In"
-  - "For"
-  - "Users"
-  - "Many"
-  - "Consider"
 
 ## Contributing
 
-Feel free to submit issues and enhancement requests!
+Contributions are always accepted. Feel free to submit issues and enhancement requests!
 
-## License
+---
 
-This project is open source and available under the MIT License.
+## What I Learned
+Creating this project provided valuable hands-on experience in:
+- **Client-Side File Processing:** Handling file uploads and reading PDF data directly in the browser using JavaScript.
+- **PDF Extraction:** Leveraging `PDF.js` to parse and extract structured text from complex PDF documents.
+- **Regular Expressions:** Designing complex regex patterns to accurately identify and extract specific question formats and metadata.
+- **Dynamic UI:** Building a responsive, real-time feedback interface without heavy frameworks (Vanilla JS).
+- **JSON Data Structure:** Designing a robust schema for educational content to ensure interoperability.
 
-## Acknowledgments
 
-- PDF.js for PDF text extraction
-- Various AI model providers for their APIs
-- AP Computer Science A community for feedback and testing 
+## Questions?
+
+![Developer Profile Picture](https://avatars.githubusercontent.com/u/60677452?s=460&v=4) 
+
+For any questions, please contact me with the information below:
+
+Email: <<Midouinmakendy@gmail.com>>
